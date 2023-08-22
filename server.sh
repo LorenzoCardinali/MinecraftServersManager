@@ -96,26 +96,62 @@ declare -A STATUSES=(
 	["off"]="$(jq -r ".Statuses.off" "$JSON_FILE")"
 )
 
-# screen parameters
-SCREEN_NAME="MC_${SERVER}_${PWD##*/}"
+# session parameters
+SESSION_NAME="MC_${SERVER}_${PWD##*/}"
 
 #############
 # Functions #
 #############
 
-# server and screen start
-function server_start() {
-	screen -Sdm $SCREEN_NAME ./$START_SCRIPT "$SERVER" "$JSON_FILE"
+# y/n request
+fn_prompt_yn() {
+	local prompt="$1"
+	local initial="$2"
+
+	if [ "${initial}" == "Y" ]; then
+		prompt+=" [Y/n] "
+	elif [ "${initial}" == "N" ]; then
+		prompt+=" [y/N] "
+	else
+		prompt+=" [y/n] "
+	fi
+
+	while true; do
+		read -e -i "${initial}" -p "${prompt}" -r yn
+		case "${yn}" in
+			[Yy] | [Yy][Ee][Ss]) return 0 ;;
+			[Nn] | [Nn][Oo]) return 1 ;;
+			*) echo -e "Please answer yes or no." ;;
+		esac
+	done
 }
 
-# check if screen exist
-function screen_check() {
-	screen -list | grep -q "${SCREEN_NAME}"
+# server and screen start
+function server_start() {
+	tmux new -d -s "${SESSION_NAME}" ./$START_SCRIPT "$SERVER" "$JSON_FILE"
+}
+
+# check if session exist
+function session_check() {
+	tmux ls 2>/dev/null | grep -qc "${SESSION_NAME}"
+}
+
+# open session
+function open_session(){
+	echo -e "Press \"CTRL+b\" then \"d\" to exit console."
+	echo -e "Do NOT press CTRL+c to exit."
+
+	if fn_prompt_yn "Continue?" Y
+	then
+		echo "Accessing console"
+		tmux attach-session -t "$SESSION_NAME"
+		echo "Console closed"
+	fi
 }
 
 # execute a command in the server console
 function to_console() {
-	screen -S ${SCREEN_NAME} -X stuff "${1}\015"
+	tmux send -t "${SESSION_NAME}" "${1}" Enter
 }
 
 # change the server status
@@ -130,7 +166,7 @@ function change_status() {
 case $COMMAND
 in
 	start)
-		if screen_check
+		if session_check
 		then
 			error "Server is already running..."
 		else
@@ -141,7 +177,7 @@ in
 	;;
 
   	stop)
-		if screen_check
+		if session_check
 		then
 			echo "Server stopping..."
 			change_status "${STATUSES[off]}"
@@ -154,7 +190,7 @@ in
    	;;
 
 	restart)
-		if screen_check
+		if session_check
 		then
 			echo "Server restarting..."
 			change_status "${STATUSES[res]}"
@@ -167,16 +203,16 @@ in
    	;;
 
 	console)
-		if screen_check
+		if session_check 
 		then
-			screen -r "$SCREEN_NAME"
+			open_session
 		else
 			error "Server is not active..."
 		fi
 	;;
 
 	broad)
-		if screen_check
+		if session_check
 		then
 			to_console "say $ARG"
 		else
@@ -185,7 +221,7 @@ in
 	;;
 
 	cmd)
-		if screen_check
+		if session_check
 		then
 			to_console "$ARG"
 		else
@@ -194,11 +230,11 @@ in
 	;;
 
 	status)
-		if screen_check
+		if is_present "${STATUS_FILE}"
 		then
 			cat "$STATUS_FILE"
 		else
-			echo "${STATUSES[off]}"
+			error "Missing status file..."
 		fi
 	;;
 
