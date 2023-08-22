@@ -68,7 +68,7 @@ do
 		"${STATUSES[on]}")
 			to_log "Server started."
 			change_status "${STATUSES[run]}"
-			java17 -Xmx${MAX_RAM} -Xms${MIN_RAM} ${PARAMETERS} $JAR_FILE -nogui
+			java -Xmx${MAX_RAM} -Xms${MIN_RAM} ${PARAMETERS} ${JAR_FILE} -nogui
 		;;
 
 		"${STATUSES[run]}")
