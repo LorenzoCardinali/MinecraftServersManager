@@ -14,8 +14,8 @@ COMMAND=${2}
 ARG=${3}
 
 # Json and script
-START_SCRIPT="Start.sh"
-JSON_FILE="Config.json"
+START_SCRIPT="start.sh"
+JSON_FILE="config.json"
 
 # error handling
 function error() {
@@ -63,7 +63,7 @@ then
 	if [ "$SERVER" == "" ]
 	then
 		help "invalid Server name"
-	elif ! jq -r ".Servers | keys" $JSON_FILE | grep -q "$SERVER"
+	elif ! jq -r ".servers | keys" $JSON_FILE | grep -q "$SERVER"
 	then
 		error "Server not present."
 	fi
@@ -72,7 +72,7 @@ else
 fi
 
 # Jar import and check
-JAR_FILE=$(jq -r ".Servers.${SERVER}.jar_file" "$JSON_FILE")
+JAR_FILE=$(jq -r ".servers.${SERVER}.jar_file" "$JSON_FILE")
 if [ ! $JAR_FILE == null ]
 then
  	if ! is_present "$SERVER/$JAR_FILE"
@@ -82,7 +82,7 @@ then
 fi
 
 # log file import and check
-LOG_FILE="$SERVER/$(jq -r ".Files.logs_file" "$JSON_FILE")"
+LOG_FILE="$SERVER/$(jq -r ".files.logs_file" "$JSON_FILE")"
 if ! is_present "$LOG_FILE"
 then
 	echo "Log file not present, making a new one..."
@@ -90,14 +90,14 @@ then
 fi
 
 # status file import
-STATUS_FILE="$SERVER/$(jq -r ".Files.status_file" "$JSON_FILE")"
+STATUS_FILE="$SERVER/$(jq -r ".files.status_file" "$JSON_FILE")"
 
 # statuses import
-declare -A STATUSES=(
-	["on"]="$(jq -r ".Statuses.on" "$JSON_FILE")"
-	["run"]="$(jq -r ".Statuses.run" "$JSON_FILE")"
-	["res"]="$(jq -r ".Statuses.res" "$JSON_FILE")"
-	["off"]="$(jq -r ".Statuses.off" "$JSON_FILE")"
+declare -A STATUS=(
+	["on"]="$(jq -r ".statuses.on" "$JSON_FILE")"
+	["run"]="$(jq -r ".statuses.run" "$JSON_FILE")"
+	["res"]="$(jq -r ".statuses.res" "$JSON_FILE")"
+	["off"]="$(jq -r ".statuses.off" "$JSON_FILE")"
 )
 
 # session parameters
@@ -130,7 +130,7 @@ fn_prompt_yn() {
 	done
 }
 
-# server and screen start
+# server and session start
 function server_start() {
 	tmux new -d -s "${SESSION_NAME}" ./$START_SCRIPT "$SERVER" "$JSON_FILE"
 }
@@ -175,7 +175,7 @@ in
 			error "Server is already running..."
 		else
 			echo "Server starting..."
-			change_status "${STATUSES[on]}"
+			change_status "${STATUS[on]}"
 			server_start
  		fi
 	;;
@@ -184,7 +184,7 @@ in
 		if session_check
 		then
 			echo "Server stopping..."
-			change_status "${STATUSES[off]}"
+			change_status "${STATUS[off]}"
 			to_console "say Stopping the server in 5 seconds."
         	sleep 5
 			to_console "stop"
@@ -197,7 +197,7 @@ in
 		if session_check
 		then
 			echo "Server restarting..."
-			change_status "${STATUSES[res]}"
+			change_status "${STATUS[res]}"
 			to_console "say Restarting the server in 5 seconds."
         	sleep 5
 			to_console "stop"

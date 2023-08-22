@@ -14,29 +14,29 @@ JSON_FILE=$2
 ###########
 
 # status file import
-STATUS_FILE=$(jq -r ".Files.status_file" "$JSON_FILE")
+STATUS_FILE=$(jq -r ".files.status_file" "$JSON_FILE")
 
 # statuses import
-declare -A STATUSES=(
-	["on"]="$(jq -r ".Statuses.on" "$JSON_FILE")"
-	["run"]="$(jq -r ".Statuses.run" "$JSON_FILE")"
-	["res"]="$(jq -r ".Statuses.res" "$JSON_FILE")"
-	["off"]="$(jq -r ".Statuses.off" "$JSON_FILE")"
+declare -A STATUS=(
+	["on"]="$(jq -r ".statuses.on" "$JSON_FILE")"
+	["run"]="$(jq -r ".statuses.run" "$JSON_FILE")"
+	["res"]="$(jq -r ".statuses.res" "$JSON_FILE")"
+	["off"]="$(jq -r ".statuses.off" "$JSON_FILE")"
 )
 
 # log file import
-LOG_FILE=$(jq -r ".Files.logs_file" "$JSON_FILE")
+LOG_FILE=$(jq -r ".files.logs_file" "$JSON_FILE")
 
 # ram import
-MIN_RAM=$(jq -r ".Servers.${SERVER}.min_ram" "$JSON_FILE")
-MAX_RAM=$(jq -r ".Servers.${SERVER}.max_ram" "$JSON_FILE")
+MIN_RAM=$(jq -r ".servers.${SERVER}.min_ram" "$JSON_FILE")
+MAX_RAM=$(jq -r ".servers.${SERVER}.max_ram" "$JSON_FILE")
 
 # parameters import
-PARAMETER_ID=$(jq -r ".Servers.${SERVER}.parameter_id" "$JSON_FILE")
-PARAMETERS=$(jq -r ".Parameters[${PARAMETER_ID}]" "$JSON_FILE")
+PARAMETER_ID=$(jq -r ".servers.${SERVER}.parameter_id" "$JSON_FILE")
+PARAMETERS=$(jq -r ".parameters[${PARAMETER_ID}]" "$JSON_FILE")
 
 # Jar import 
-JAR_FILE=$(jq -r ".Servers.${SERVER}.jar_file" "$JSON_FILE")
+JAR_FILE=$(jq -r ".servers.${SERVER}.jar_file" "$JSON_FILE")
 if [ "$JAR_FILE" == null ]
 then
 	JAR_FILE=""
@@ -65,23 +65,23 @@ while true
 do
 	case $(cat "$STATUS_FILE")
 	in
-		"${STATUSES[on]}")
+		"${STATUS[on]}")
 			to_log "Server started."
-			change_status "${STATUSES[run]}"
+			change_status "${STATUS[run]}"
 			java -Xmx${MAX_RAM} -Xms${MIN_RAM} ${PARAMETERS} ${JAR_FILE} -nogui
 		;;
 
-		"${STATUSES[run]}")
+		"${STATUS[run]}")
 			to_log "Server closed or crashed, restarting it..."
-			change_status "${STATUSES[on]}"
+			change_status "${STATUS[on]}"
 		;;
 
-		"${STATUSES[res]}")
+		"${STATUS[res]}")
 			to_log "Server restarted."
-			change_status "${STATUSES[on]}"
+			change_status "${STATUS[on]}"
 		;;
 
-		"${STATUSES[off]}")
+		"${STATUS[off]}")
 			to_log "Server stopped."
 			exit 0
 		;;
