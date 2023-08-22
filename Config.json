@@ -16,10 +16,10 @@
             "logs_file": "activity.txt",
             "status_file": "status"
         },
-        "Creative": {
-            "jar_file": "paper-1.19.2-125.jar",
+        "tests": {
+            "jar_file": "paper-1.20.1-145.jar",
             "min_ram": "512M",
-            "max_ram": "2G",
+            "max_ram": "1G",
             "parameter_id": 0,
             "logs_file": "activity.txt",
             "status_file": "status"
