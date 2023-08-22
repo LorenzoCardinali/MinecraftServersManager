@@ -83,7 +83,6 @@ do
 
 		"${STATUSES[off]}")
 			to_log "Server stopped."
-			rm "$STATUS_FILE"
 			exit 0
 		;;
 
