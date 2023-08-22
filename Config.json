@@ -4,35 +4,33 @@
             "jar_file": null,
             "min_ram": "4G",
             "max_ram": "8G",
-            "parameter_id": 1,
-            "logs_file": "activity.txt",
-            "status_file": "status"
+            "parameter_id": 1
         },
         "Survival": {
             "jar_file": "paper-1.19.2-125.jar",
             "min_ram": "512M",
             "max_ram": "4G",
-            "parameter_id": 0,
-            "logs_file": "activity.txt",
-            "status_file": "status"
+            "parameter_id": 0
         },
         "tests": {
             "jar_file": "paper-1.20.1-145.jar",
             "min_ram": "512M",
             "max_ram": "1G",
-            "parameter_id": 0,
-            "logs_file": "activity.txt",
-            "status_file": "status"
+            "parameter_id": 0
         }
     },
+    "Parameters": [
+        "-XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:G1ReservePercent=20 -XX:G1HeapRegionSize=8M -XX:+UseG1GC -XX:+DisableExplicitGC -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1MixedGCLiveThresholdPercent=90 -XX:+AlwaysPreTouch -XX:+ParallelRefProcEnabled -XX:+PerfDisableSharedMem -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:MaxTenuringThreshold=1 -Xss2M",
+        "@user_jvm_args.txt @libraries/net/minecraftforge/forge/1.19.2-43.2.14/unix_args.txt"
+    ],
     "Statuses": {
         "on": "active",
         "run": "running",
         "res": "restarting",
         "off": "inactive"
     },
-    "Parameters": [
-        "-XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:G1ReservePercent=20 -XX:G1HeapRegionSize=8M -XX:+UseG1GC -XX:+DisableExplicitGC -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1MixedGCLiveThresholdPercent=90 -XX:+AlwaysPreTouch -XX:+ParallelRefProcEnabled -XX:+PerfDisableSharedMem -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:MaxTenuringThreshold=1 -Xss2M",
-        "@user_jvm_args.txt @libraries/net/minecraftforge/forge/1.19.2-43.2.14/unix_args.txt"
-    ]
+    "Files": {
+        "logs_file": "activity.txt",
+        "status_file": "status"
+    }
 }

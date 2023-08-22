@@ -82,7 +82,7 @@ then
 fi
 
 # log file import and check
-LOG_FILE="$SERVER/$(jq -r ".Servers.$SERVER.logs_file" "$JSON_FILE")"
+LOG_FILE="$SERVER/$(jq -r ".Files.logs_file" "$JSON_FILE")"
 if ! is_present "$LOG_FILE"
 then
 	echo "Log file not present, making a new one..."
@@ -90,7 +90,7 @@ then
 fi
 
 # status file import
-STATUS_FILE="$SERVER/$(jq -r ".Servers.$SERVER.status_file" "$JSON_FILE")"
+STATUS_FILE="$SERVER/$(jq -r ".Files.status_file" "$JSON_FILE")"
 
 # statuses import
 declare -A STATUSES=(

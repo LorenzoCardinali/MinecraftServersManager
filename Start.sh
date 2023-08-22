@@ -14,7 +14,7 @@ JSON_FILE=$2
 ###########
 
 # status file import
-STATUS_FILE=$(jq -r ".Servers.$SERVER.status_file" "$JSON_FILE")
+STATUS_FILE=$(jq -r ".Files.status_file" "$JSON_FILE")
 
 # statuses import
 declare -A STATUSES=(
@@ -25,7 +25,7 @@ declare -A STATUSES=(
 )
 
 # log file import
-LOG_FILE=$(jq -r ".Servers.$SERVER.logs_file" "$JSON_FILE")
+LOG_FILE=$(jq -r ".Files.logs_file" "$JSON_FILE")
 
 # ram import
 MIN_RAM=$(jq -r ".Servers.${SERVER}.min_ram" "$JSON_FILE")
