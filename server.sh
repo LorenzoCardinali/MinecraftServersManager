@@ -18,18 +18,18 @@ START_SCRIPT="start.sh"
 JSON_FILE="config.json"
 
 # error handling
-function error() {
+function fn_error() {
 	echo "ERROR: $1"
 	exit 1
 }	
 
 # file presents check
-function is_present() {
-	test -f "$1"
+function fn_is_present() {
+	test -e "$1"
 }
 
-# help
-function help() {
+# help function
+function fn_help() {
 	echo "Script usage: ${0} [Server name] [Command]"
 	echo "Commands list:"
 	echo -e "start \011\011- Start server"
@@ -42,9 +42,9 @@ function help() {
 	exit
 }
 
-if [ "${SERVER}" == "" ] || [ "${SERVER}" == "-help" ]
+if [ "${SERVER}" == "-help" ] || [ "${SERVER}" == "" ]
 then
-	help
+	fn_help
 fi
 
 ######################
@@ -52,38 +52,36 @@ fi
 ######################
 
 # start script check
-if ! is_present $START_SCRIPT 
+if ! fn_is_present $START_SCRIPT
 then 
-	error "Start script not present."
+	fn_error "Start script not present."
 fi
 
-# Json and Server check
-if is_present $JSON_FILE
+# json file check
+if ! fn_is_present $JSON_FILE
+then 
+	fn_error "Json file not present."
+fi
+
+# server check
+if ! jq -r ".servers | keys" $JSON_FILE | grep -q "$SERVER"
 then
-	if [ "$SERVER" == "" ]
-	then
-		help "invalid Server name"
-	elif ! jq -r ".servers | keys" $JSON_FILE | grep -q "$SERVER"
-	then
-		error "Server not present."
-	fi
-else
-	error "Json file not present."
+	fn_error "Server not present."
 fi
 
 # Jar import and check
 JAR_FILE=$(jq -r ".servers.${SERVER}.jar_file" "$JSON_FILE")
 if [ ! $JAR_FILE == null ]
 then
- 	if ! is_present "$SERVER/$JAR_FILE"
+ 	if ! fn_is_present "$SERVER/$JAR_FILE"
 	then
-		error "Jar file not present or incorrect."
+		fn_error "Jar file not present or incorrect."
 	fi
 fi
 
 # log file import and check
 LOG_FILE="$SERVER/$(jq -r ".files.logs_file" "$JSON_FILE")"
-if ! is_present "$LOG_FILE"
+if ! fn_is_present "$LOG_FILE"
 then
 	echo "Log file not present, making a new one..."
 	touch "$LOG_FILE"
@@ -101,14 +99,14 @@ declare -A STATUS=(
 )
 
 # session parameters
-SESSION_NAME="$(echo "MC_${SERVER}_${PWD##*/}" | tr '.' '_')"
+SESSION_NAME="MC_${SERVER}"
 
 #############
 # Functions #
 #############
 
 # y/n request
-fn_prompt_yn() {
+function fn_prompt_yn() {
 	local prompt="$1"
 	local initial="$2"
 
@@ -131,35 +129,33 @@ fn_prompt_yn() {
 }
 
 # server and session start
-function server_start() {
+function fn_server_start() {
 	tmux new -d -s "${SESSION_NAME}" ./$START_SCRIPT "$SERVER" "$JSON_FILE"
 }
 
 # check if session exist
-function session_check() {
+function fn_session_check() {
 	tmux ls 2>/dev/null | grep -qc "${SESSION_NAME}"
 }
 
 # open session
-function open_session(){
+function fn_open_session(){
 	echo -e "Press \"CTRL+b\" then \"d\" to exit console."
 	echo -e "Do NOT press CTRL+c to exit."
 
 	if fn_prompt_yn "Continue?" Y
 	then
-		echo "Accessing console"
 		tmux attach-session -t "$SESSION_NAME"
-		echo "Console closed"
 	fi
 }
 
 # execute a command in the server console
-function to_console() {
+function fn_to_console() {
 	tmux send -t "${SESSION_NAME}" "${1}" Enter
 }
 
 # change the server status
-function change_status() {
+function fn_change_status() {
 	echo "$1" > "$STATUS_FILE"
 }
 
@@ -170,80 +166,79 @@ function change_status() {
 case $COMMAND
 in
 	start)
-		if session_check
+		if fn_session_check
 		then
-			error "Server is already running..."
+			fn_error "Server is already running..."
 		else
 			echo "Server starting..."
-			change_status "${STATUS[on]}"
-			server_start
+			fn_change_status "${STATUS[on]}"
+			fn_server_start
  		fi
 	;;
 
   	stop)
-		if session_check
+		if fn_session_check
 		then
 			echo "Server stopping..."
-			change_status "${STATUS[off]}"
-			to_console "say Stopping the server in 5 seconds."
+			fn_change_status "${STATUS[off]}"
+			fn_to_console "say Stopping the server in 5 seconds."
         	sleep 5
-			to_console "stop"
+			fn_to_console "stop"
 		else
-			error "Server is already stopped..."
+			fn_error "Server is already stopped..."
 		fi
    	;;
 
 	restart)
-		if session_check
+		if fn_session_check
 		then
 			echo "Server restarting..."
-			change_status "${STATUS[res]}"
-			to_console "say Restarting the server in 5 seconds."
+			fn_change_status "${STATUS[res]}"
+			fn_to_console "say Restarting the server in 5 seconds."
         	sleep 5
-			to_console "stop"
+			fn_to_console "stop"
 		else
-			error "Server is not active..."
+			fn_error "Server is not active..."
 		fi
    	;;
 
 	console)
-		if session_check 
+		if fn_session_check 
 		then
-			open_session
+			fn_open_session
 		else
-			error "Server is not active..."
+			fn_error "Server is not active..."
 		fi
 	;;
 
 	broad)
-		if session_check
+		if fn_session_check
 		then
-			to_console "say $ARG"
+			fn_to_console "say $ARG"
 		else
-			error "Server is not active..."
+			fn_error "Server is not active..."
 		fi
 	;;
 
 	cmd)
-		if session_check
+		if fn_session_check
 		then
-			to_console "$ARG"
+			fn_to_console "$ARG"
 		else
-			error "Server is not active..."
+			fn_error "Server is not active..."
 		fi
 	;;
 
 	status)
-		if is_present "${STATUS_FILE}"
+		if fn_is_present "${STATUS_FILE}"
 		then
 			cat "$STATUS_FILE"
 		else
-			error "Missing status file..."
+			fn_error "Missing status file..."
 		fi
 	;;
 
   	*)
-		echo "ERROR: $COMMAND"
-		help "invalid command"
+		fn_error "Invalid or missing command, Type ./server.sh -help to show useful commands."
     ;;
 esac

@@ -49,46 +49,49 @@ fi
 #############
 
 # logging handling
-function to_log() {
+function fn_to_log() {
 	echo "[$(date)] : ${1}" >> "$LOG_FILE"
 }
 
 # change the server status
-function change_status() {
+function fn_change_status() {
 	echo "$1" > "$STATUS_FILE"
 }
 
 # move to server directory if present
 cd "$SERVER" || exit 1
+#######################
+# Server handler loop #
+#######################
 
 while true
 do
 	case $(cat "$STATUS_FILE")
 	in
 		"${STATUS[on]}")
-			to_log "Server started."
-			change_status "${STATUS[run]}"
+			fn_to_log "Server started."
+			fn_change_status "${STATUS[run]}"
 			java -Xmx${MAX_RAM} -Xms${MIN_RAM} ${PARAMETERS} ${JAR_FILE} -nogui
 		;;
 
 		"${STATUS[run]}")
-			to_log "Server closed or crashed, restarting it..."
-			change_status "${STATUS[on]}"
+			fn_to_log "Server closed or crashed, restarting it..."
+			fn_change_status "${STATUS[on]}"
 		;;
 
 		"${STATUS[res]}")
-			to_log "Server restarted."
-			change_status "${STATUS[on]}"
+			fn_to_log "Server restarted."
+			fn_change_status "${STATUS[on]}"
 		;;
 
 		"${STATUS[off]}")
-			to_log "Server stopped."
+			fn_to_log "Server stopped."
 			exit 0
 		;;
 
 		*)
-			to_log "ERROR Start script."
-			to_log "Status file -> $(cat "$STATUS_FILE")"
+			fn_to_log "ERROR Start script."
+			fn_to_log "Status file -> $(cat "$STATUS_FILE")"
 			rm "$STATUS_FILE"
 			exit 1
 		;;
