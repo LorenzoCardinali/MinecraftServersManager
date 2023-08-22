@@ -30,18 +30,22 @@ function is_present() {
 
 # help
 function help() {
-	echo "ERROR: $1"
 	echo "Script usage: ${0} [Server name] [Command]"
 	echo "Commands list:"
-	echo -e "start \011\011- start server"
-	echo -e "stop \011\011- stop server"
-	echo -e "restart \011- restart server"
-	echo -e "status \011\011- display the server status"
-	echo -e "console \011- open the server console"
-	echo -e "broad [string] \011- broadcast a string"
-	echo -e "cmd [string] \011- execute a command"
+	echo -e "start \011\011- Start server"
+	echo -e "stop \011\011- Stop server"
+	echo -e "restart \011- Restart server"
+	echo -e "status \011\011- Display the server status"
+	echo -e "console \011- Open the server console"
+	echo -e "broad [string] \011- Broadcast a string"
+	echo -e "cmd [string] \011- Execute a command"
 	exit
 }
+
+if [ "${SERVER}" == "" ] || [ "${SERVER}" == "-help" ]
+then
+	help
+fi
 
 ######################
 # Imports and checks #
@@ -239,6 +243,7 @@ in
 	;;
 
   	*)
+		echo "ERROR: $COMMAND"
 		help "invalid command"
     ;;
 esac
