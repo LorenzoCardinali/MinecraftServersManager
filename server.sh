@@ -129,6 +129,31 @@ function fn_prompt_yn() {
 	done
 }
 
+# eula check
+function fn_eula_check() {
+	if fn_is_present "$SERVER/eula.txt"
+	then
+		if grep -q "false" "$SERVER/eula.txt"
+		then
+			fn_eula_agree
+		fi
+	else
+		echo "EULA file missing, making one..."
+		fn_eula_agree
+	fi
+}
+
+# asks for eula agreement 
+function fn_eula_agree() {
+	echo "You need to agree to the EULA in order to run the server."
+	if fn_prompt_yn "Do you agree?" Y
+	then
+		printf "#%s \neula=true" "$(date)" > "$SERVER"/eula.txt
+	else
+		fn_error "Can't start the server without the agreement of the eula."
+	fi
+}
+
 # server and session start
 function fn_server_start() {
 	tmux new -d -s "${SESSION_NAME}" ./$START_SCRIPT "$SERVER" "$JSON_FILE"
@@ -171,6 +196,7 @@ in
 		then
 			fn_error "Server is already running..."
 		else
+			fn_eula_check
 			echo "Server starting..."
 			fn_change_status "${STATUS[on]}"
 			fn_server_start
