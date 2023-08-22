@@ -101,7 +101,7 @@ declare -A STATUSES=(
 )
 
 # session parameters
-SESSION_NAME="MC_${SERVER}_${PWD##*/}"
+SESSION_NAME="$(echo "MC_${SERVER}_${PWD##*/}" | tr '.' '_')"
 
 #############
 # Functions #
