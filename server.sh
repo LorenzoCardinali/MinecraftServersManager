@@ -97,7 +97,7 @@ declare -A STATUSES=(
 )
 
 # screen parameters
-SCREEN_NAME="MC_${SERVER}"
+SCREEN_NAME="MC_${SERVER}_${PWD##*/}"
 
 #############
 # Functions #
