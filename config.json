@@ -1,21 +1,21 @@
 {
     "servers": {
-	    "atm8": {
+        "atm8": {
             "jar_file": null,
             "min_ram": "4G",
             "max_ram": "8G",
             "parameter_id": 1
         },
         "survival": {
-            "jar_file": "paper-1.19.2-125.jar",
+            "jar_file": "paper-1.16.5-794.jar",
             "min_ram": "512M",
-            "max_ram": "4G",
+            "max_ram": "512M",
             "parameter_id": 0
         },
-        "tests": {
+        "creative": {
             "jar_file": "paper-1.20.1-145.jar",
             "min_ram": "512M",
-            "max_ram": "1G",
+            "max_ram": "512M",
             "parameter_id": 0
         }
     },
@@ -27,7 +27,8 @@
         "on": "active",
         "run": "running",
         "res": "restarting",
-        "off": "inactive"
+        "off": "inactive",
+        "err": "error"
     },
     "files": {
         "logs_file": "activity.txt",

@@ -22,6 +22,7 @@ declare -A STATUS=(
 	["run"]="$(jq -r ".statuses.run" "$JSON_FILE")"
 	["res"]="$(jq -r ".statuses.res" "$JSON_FILE")"
 	["off"]="$(jq -r ".statuses.off" "$JSON_FILE")"
+	["err"]="$(jq -r ".statuses.err" "$JSON_FILE")"
 )
 
 # log file import
@@ -60,6 +61,32 @@ function fn_change_status() {
 
 # move to server directory if present
 cd "$SERVER" || exit 1
+
+#################
+# Crash handler #
+#################
+
+# timestamp and tries variables
+TIME_STAMP=0
+MAX_TRIES=3
+TEST_TIME=500
+TRIES=$MAX_TRIES
+
+function fn_timer_update() {
+	if [ $(($(date +%s) - "$TIME_STAMP")) -ge $TEST_TIME ]
+	then
+		TIME_STAMP=$(date +%s)
+		TRIES=$MAX_TRIES
+	else
+		((TRIES -= 1))
+	fi
+
+	if [ $TRIES -le 0 ]
+	then
+		fn_change_status "${STATUS[err]}"
+	fi
+}
+
 #######################
 # Server handler loop #
 #######################
@@ -71,6 +98,7 @@ do
 		"${STATUS[on]}")
 			fn_to_log "Server started."
 			fn_change_status "${STATUS[run]}"
+			fn_timer_update
 			java -Xmx${MAX_RAM} -Xms${MIN_RAM} ${PARAMETERS} ${JAR_FILE} -nogui
 		;;
 
@@ -87,6 +115,11 @@ do
 		"${STATUS[off]}")
 			fn_to_log "Server stopped."
 			exit 0
+		;;
+
+		"${STATUS[err]}")
+			fn_to_log "Server crashed multiple times, shutting it down..."
+			fn_change_status "${STATUS[off]}"
 		;;
 
 		*)

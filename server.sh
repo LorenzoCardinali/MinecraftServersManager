@@ -96,6 +96,7 @@ declare -A STATUS=(
 	["run"]="$(jq -r ".statuses.run" "$JSON_FILE")"
 	["res"]="$(jq -r ".statuses.res" "$JSON_FILE")"
 	["off"]="$(jq -r ".statuses.off" "$JSON_FILE")"
+	["err"]="$(jq -r ".statuses.err" "$JSON_FILE")"
 )
 
 # session parameters
