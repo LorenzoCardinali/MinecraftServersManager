@@ -66,7 +66,17 @@ fi
 # server check
 if ! jq -r ".servers | keys" $JSON_FILE | grep -q "$SERVER"
 then
-	fn_error "Server not present."
+	if ! fn_is_present "$SERVER"
+	then
+		if fn_prompt_yn "Server foulder not present, want to make one?" Y
+		then
+			mkdir "$SERVER"
+		else
+			fn_error "Can't start the server."
+		fi
+	else
+		fn_error "Server not present."
+	fi
 fi
 
 # Jar import and check
