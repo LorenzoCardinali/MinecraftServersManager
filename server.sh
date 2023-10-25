@@ -218,7 +218,7 @@ case $COMMAND
         then
             echo "Server stopping..."
             fn_change_status "${STATUS[off]}"
-            fn_to_console "say Stopping the server in 5 seconds."
+            fn_to_console "broadcast Stopping the server in 5 seconds."
             sleep 5
             fn_to_console "stop"
         else
@@ -231,7 +231,7 @@ case $COMMAND
         then
             echo "Server restarting..."
             fn_change_status "${STATUS[res]}"
-            fn_to_console "say Restarting the server in 5 seconds."
+            fn_to_console "broadcast Restarting the server in 5 seconds."
             sleep 5
             fn_to_console "stop"
         else
@@ -251,7 +251,7 @@ case $COMMAND
     broad)
         if fn_session_check
         then
-            fn_to_console "say $ARG"
+            fn_to_console "broadcast $ARG"
         else
             fn_error "Server is not active..."
         fi
