@@ -13,7 +13,6 @@ JSON_BASE="base.json"
 
 VERSION=""
 
-
 # error handling
 function fn_error() {
 	echo "ERROR: $1"
@@ -24,6 +23,11 @@ function fn_error() {
 function fn_is_present() {
 	test -e "$1"
 }
+
+if [ "${SERVER}" == "" ]
+then
+	fn_error "Missing server name"
+fi
 
 # y/n request
 function fn_prompt_yn() {
@@ -88,6 +92,12 @@ URL=${URL}/versions/${VERSION}
 PAPER_BUILD=$(wget -qO - $URL | jq '.builds[-1]')
 JAR_NAME="paper-${VERSION}-${PAPER_BUILD}.jar"
 URL=${URL}/builds/${PAPER_BUILD}/downloads/${JAR_NAME}
+
+if ! fn_is_present "${SERVER}"
+then
+	echo "Server folder missing, making one..."
+	mkdir ${SERVER}
+fi
 
 wget ${URL} -O ${SERVER}/${JAR_NAME}
 
