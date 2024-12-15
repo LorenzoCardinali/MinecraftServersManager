@@ -9,43 +9,11 @@
 cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
 
 # arguments
-SERVER=${1}
-COMMAND=${2}
+COMMAND=${1}
+SERVER=${2}
 ARG=${3}
 
-# Json and script
-START_SCRIPT="start.sh"
-JSON_FILE="config.json"
-
-# error handling
-function fn_error() {
-    echo "ERROR: $1"
-    exit 1
-}
-
-# file presents check
-function fn_is_present() {
-    test -e "$1"
-}
-
-# help function
-function fn_help() {
-    echo "Script usage: ${0} [Server name] [Command]"
-    echo "Commands list:"
-    echo -e "start \011\011- Start server"
-    echo -e "stop \011\011- Stop server"
-    echo -e "restart \011- Restart server"
-    echo -e "status \011\011- Display the server status"
-    echo -e "console \011- Open the server console"
-    echo -e "broad [string] \011- Broadcast a string"
-    echo -e "cmd [string] \011- Execute a command"
-    exit
-}
-
-if [ "${SERVER}" == "-help" ] || [ "${SERVER}" == "" ]
-then
-    fn_help
-fi
+source "$(dirname "$0")/libs.sh"
 
 ######################
 # Imports and checks #
@@ -66,48 +34,30 @@ fi
 # server check
 if ! jq -r ".servers | keys" $JSON_FILE | grep -q "$SERVER"
 then
-    if ! fn_is_present "$SERVER"
-    then
-        if fn_prompt_yn "Server foulder not present, want to make one?" Y
-        then
-            mkdir "$SERVER"
-        else
-            fn_error "Can't start the server."
-        fi
-    else
-        fn_error "Server not present."
-    fi
+    fn_error "Server configs not found."
 fi
 
-# Jar import and check
-JAR_FILE=$(jq -r ".servers.${SERVER}.jar_file" "$JSON_FILE")
-if [ ! $JAR_FILE == null ]
+if ! fn_is_present "$SERVER"
 then
-    if ! fn_is_present "$SERVER/$JAR_FILE"
-    then
-        fn_error "Jar file not present or incorrect."
-    fi
+    fn_error "Server folder not present."
 fi
 
-# log file import and check
-LOG_FILE="$SERVER/$(jq -r ".files.logs_file" "$JSON_FILE")"
+if [ "$JAR_FILE" == "null" ]
+then
+    fn_error "Jar file incorrect."
+fi
+
+if ! fn_is_present "$JAR_FILE"
+then
+    fn_error "Jar file not found."
+fi
+
+# log file check
 if ! fn_is_present "$LOG_FILE"
 then
     echo "Log file not present, making a new one..."
     touch "$LOG_FILE"
 fi
-
-# status file import
-STATUS_FILE="$SERVER/$(jq -r ".files.status_file" "$JSON_FILE")"
-
-# statuses import
-declare -A STATUS=(
-    ["on"]="$(jq -r ".statuses.on" "$JSON_FILE")"
-    ["run"]="$(jq -r ".statuses.run" "$JSON_FILE")"
-    ["res"]="$(jq -r ".statuses.res" "$JSON_FILE")"
-    ["off"]="$(jq -r ".statuses.off" "$JSON_FILE")"
-    ["err"]="$(jq -r ".statuses.err" "$JSON_FILE")"
-)
 
 # session parameters
 SESSION_NAME="MC_${SERVER}"
@@ -115,29 +65,6 @@ SESSION_NAME="MC_${SERVER}"
 #############
 # Functions #
 #############
-
-# y/n request
-function fn_prompt_yn() {
-    local prompt="$1"
-    local initial="$2"
-    
-    if [ "${initial}" == "Y" ]; then
-        prompt+=" [Y/n] "
-        elif [ "${initial}" == "N" ]; then
-        prompt+=" [y/N] "
-    else
-        prompt+=" [y/n] "
-    fi
-    
-    while true; do
-        read -e -i "${initial}" -p "${prompt}" -r yn
-        case "${yn}" in
-            [Yy] | [Yy][Ee][Ss]) return 0 ;;
-            [Nn] | [Nn][Oo]) return 1 ;;
-            *) echo -e "Please answer yes or no." ;;
-        esac
-    done
-}
 
 # eula check
 function fn_eula_check() {
@@ -190,11 +117,6 @@ function fn_to_console() {
     tmux send -t "${SESSION_NAME}" "${1}" Enter
 }
 
-# change the server status
-function fn_change_status() {
-    echo "$1" > "$STATUS_FILE"
-}
-
 ##################
 # Commands cases #
 ##################
@@ -209,7 +131,8 @@ case $COMMAND
             fn_eula_check
             echo "Server starting..."
             fn_change_status "${STATUS[on]}"
-            fn_server_start
+            fn_server_start 
+            #./$START_SCRIPT "$SERVER" "$JSON_FILE"
         fi
     ;;
     
@@ -276,6 +199,6 @@ case $COMMAND
     ;;
     
     *)
-        fn_error "Invalid or missing command, Type ./server.sh -help to show useful commands."
+        fn_error "Invalid or missing command."
     ;;
 esac
