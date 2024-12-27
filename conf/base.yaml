@@ -1,0 +1,5 @@
+server_name:
+  jar_file: file.jar
+  min_ram: "1G"
+  max_ram: "1G"
+  parameter_id: 0

@@ -1,9 +1,4 @@
 #!/bin/bash
-###### ######## ####### #######  ###  #######
-###           ##       ##      ## ###
-###      #######  ######  ###  ## ###  #######
-###      ###  ##  ##  ##  ###  ## ###  ##
-######  ###  ##  ##   ## ######  ###  ##
 
 # move to script directory
 cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
@@ -13,47 +8,36 @@ COMMAND=${1}
 SERVER=${2}
 ARG=${3}
 
-source "$(dirname "$0")/libs.sh"
+source "$(dirname "$0")/fun-lib.sh"
+source "$(dirname "$0")/var-lib.sh"
 
 ######################
 # Imports and checks #
 ######################
 
 # start script check
-if ! fn_is_present $START_SCRIPT
-then
-    fn_error "Start script not present."
-fi
+fn_is_present "$START_SCRIPT" "Start script not present."
 
 # json file check
-if ! fn_is_present $JSON_FILE
-then
-    fn_error "Json file not present."
-fi
+fn_is_present "$JSON_FILE" "Json file not present."
 
 # server check
-if ! jq -r ".servers | keys" $JSON_FILE | grep -q "$SERVER"
+if ! jq -r ".servers | keys" "$JSON_FILE" | grep -q "$SERVER"
 then
     fn_error "Server configs not found."
 fi
 
-if ! fn_is_present "$SERVER"
-then
-    fn_error "Server folder not present."
-fi
+fn_is_present "$SERVER" "Server folder not present."
 
 if [ "$JAR_FILE" == "null" ]
 then
     fn_error "Jar file incorrect."
 fi
 
-if ! fn_is_present "$JAR_FILE"
-then
-    fn_error "Jar file not found."
-fi
+fn_is_present "$JAR_FILE" "Jar file not found."
 
 # log file check
-if ! fn_is_present "$LOG_FILE"
+if fn_is_present "$LOG_FILE"
 then
     echo "Log file not present, making a new one..."
     touch "$LOG_FILE"
@@ -93,7 +77,8 @@ function fn_eula_agree() {
 
 # server and session start
 function fn_server_start() {
-    tmux new -d -s "${SESSION_NAME}" ./$START_SCRIPT "$SERVER" "$JSON_FILE"
+    echo server started
+    #tmux new -d -s "${SESSION_NAME}" ./$START_SCRIPT "$SERVER" "$JSON_FILE"
 }
 
 # check if session exist
@@ -121,8 +106,7 @@ function fn_to_console() {
 # Commands cases #
 ##################
 
-case $COMMAND
-    in
+case "$COMMAND" in
     start)
         if fn_session_check
         then

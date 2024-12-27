@@ -1,12 +1,7 @@
 #!/bin/bash
-###### ######## ####### #######  ###  #######
-###           ##       ##      ## ###
-###      #######  ######  ###  ## ###  #######
-###      ###  ##  ##  ##  ###  ## ###  ##
-######  ###  ##  ##   ## ######  ###  ##
 
 _completion() {
-    local commands="start stop restart status console broad cmd help"
+    local commands="add start stop restart status console broad cmd help"
     local servers="atm8 survival creative"
     
     # If the firts argument is provided, suggest commands
