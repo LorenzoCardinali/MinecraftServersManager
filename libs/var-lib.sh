@@ -27,11 +27,13 @@ STATUS_FILE="$DATA_FOLDER/.status"
 export STATUS_FILE
 
 # statuses
-declare -A STATUS=(
-    ["on"]="active"
-    ["run"]="running"
-    ["res"]="restarting"
-    ["off"]="inactive"
-    ["err"]="error"
-)
-export STATUS
+STATUS_on="active"
+export STATUS_on
+STATUS_off="inactive"
+export STATUS_off
+STATUS_res="restarting"
+export STATUS_res
+STATUS_run="running"
+export STATUS_run
+STATUS_err="error"
+export STATUS_err

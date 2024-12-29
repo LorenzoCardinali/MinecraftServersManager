@@ -27,12 +27,15 @@ SERVER_PATH="$PWD/$SERVER_NAME"
 export SERVER_PATH
 
 MODULE_PATH="$SOURCE_PATH/modules"
+export MODULE_PATH
 LIBS_PATH="$SOURCE_PATH/libs"
 CONFIG_PATH="$SOURCE_PATH/config"
 export CONFIG_PATH
 
 source "$LIBS_PATH/var-lib.sh"
 source "$LIBS_PATH/fun-lib.sh"
+
+echo "$STATUS"
 
 # $(var="$SERVER_NAME" yq '.servers | has(strenv(var))' conf/"$YAML_FILE")
 

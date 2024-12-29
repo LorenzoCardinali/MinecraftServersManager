@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # move to script directory
-cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
+#cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
+
 
 # arguments
 COMMAND=${1}
@@ -20,7 +21,7 @@ JAR_FILE="$SERVER_PATH/$(yq e '.jar_file' "$CONFIG_FILE")"
 fn_is_present "$JAR_FILE" "Jar file not found."
 
 # log file check
-if fn_is_present "$LOG_FILE"
+if ! fn_is_present "$LOG_FILE"
 then
     echo "Log file not present, making a new one..."
     fn_to_log "Made log file" "$LOG_FILE"
@@ -99,9 +100,9 @@ case "$COMMAND" in
         else
             fn_eula_check
             echo "Server starting..."
-            fn_change_status "${STATUS[on]}" "$STATUS_FILE"
-            fn_server_start 
-            #./$START_SCRIPT "$SERVER" "$JSON_FILE"
+            fn_change_status "$STATUS_on" "$STATUS_FILE"
+            fn_server_start
+            bash "$MODULE_PATH/$START_MODULE"
         fi
     ;;
     
@@ -109,7 +110,7 @@ case "$COMMAND" in
         if fn_session_check
         then
             echo "Server stopping..."
-            fn_change_status "${STATUS[off]}" "$STATUS_FILE"
+            fn_change_status "$STATUS_off" "$STATUS_FILE"
             fn_to_console "broadcast Stopping the server in 5 seconds."
             sleep 5
             fn_to_console "stop"
@@ -122,7 +123,7 @@ case "$COMMAND" in
         if fn_session_check
         then
             echo "Server restarting..."
-            fn_change_status "${STATUS[res]}" "$STATUS_FILE"
+            fn_change_status "$STATUS_res" "$STATUS_FILE"
             fn_to_console "broadcast Restarting the server in 5 seconds."
             sleep 5
             fn_to_console "stop"
@@ -163,7 +164,9 @@ case "$COMMAND" in
         then
             cat "$STATUS_FILE"
         else
-            fn_error "Missing status file..."
+            fn_error "Missing status file..." false
+            echo "Making one..."
+            fn_change_status "$STATUS_off" "$STATUS_FILE"
         fi
     ;;
     
