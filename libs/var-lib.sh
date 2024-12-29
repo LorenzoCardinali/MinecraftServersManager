@@ -13,14 +13,19 @@ export BACKUP_MODULE
 ADDSERVER_MODULE="addServer.sh"
 export ADDSERVER_MODULE
 
-# file definition
-YAML_FILE="config.yml"
-export YAML_FILE
+# file / folder definition
+SERVER_PATH="$PWD/$SERVER_NAME"
+export SERVER_PATH
+DATA_FOLDER="$SERVER_PATH/mcmanager"
+export DATA_FOLDER
 
-LOG_FILE="activity.log"
+CONFIG_FILE="$DATA_FOLDER/config.yml"
+export CONFIG_FILE
+
+LOG_FILE="$DATA_FOLDER/activity.log"
 export LOG_FILE
 
-STATUS_FILE=".status"
+STATUS_FILE="$DATA_FOLDER/.status"
 export STATUS_FILE
 
 # statuses

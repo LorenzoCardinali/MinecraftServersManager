@@ -3,65 +3,71 @@
 # papermc api url
 URL="https://papermc.io/api/v2/projects/paper"
 
-# custom requests for papermc api
+# initial version
 initial="latest"
 
-while true
-do
-    read -e -i "${initial}" -p "Insert version (ex. 1.20): " -r respond
+echo "Making server folders..."
+mkdir -p "$DATA_FOLDER"
+
+while true; do
+    read -e -i "$initial" -p "Insert version (ex. 1.20): " -r respond
     
-    if [ "${respond}" == "latest" ]
+    if [ "$respond" == "latest" ]
     then
-        VERSION="latest"
+        version="latest"
         break
     fi
     
-    results=$(wget -qO - $URL | jq -r ".versions" | grep -c "$respond")
+    results=$(wget -qO - "$URL" | jq -r ".versions" | grep -c "$respond")
     
     if [ "$results" -eq 0 ]
     then
-        echo -e "No matching result, try again."
+        fn_error "No matching result, try again." false
     elif [ "$results" -gt 1 ]
     then
-        echo -e "Too many matching results, try again."
+        fn_error "Too many matching results, try again." false
     else
-        VERSION="${respond}"
+        version=$respond
         break
     fi
     
     initial=$respond
 done
 
-if [ "${VERSION}" = latest ]
+if [ "$version" == "latest" ]
 then
     # Get the latest MC version
-    VERSION=$(wget -qO - $URL | jq -r '.versions[-1]')
+    version=$(wget -qO - $URL | jq -r '.versions[-1]')
 fi
 
-URL=${URL}/versions/${VERSION}
+URL="$URL/versions/$version"
 PAPER_BUILD=$(wget -qO - "$URL" | jq '.builds[-1]')
-JAR_NAME="paper-${VERSION}-${PAPER_BUILD}.jar"
-URL=${URL}/builds/${PAPER_BUILD}/downloads/${JAR_NAME}
+JAR_NAME="paper-$version-$PAPER_BUILD.jar"
+URL="$URL/builds/$PAPER_BUILD/downloads/$JAR_NAME"
 
-# Makes the server folder if missing
-if ! fn_is_present "${SERVER_NAME}"
-then
-    echo "Server folder missing, making one..."
-    mkdir -p "${SERVER_NAME}"
-fi
+# Download the jar and check if the download was successful
+wget "$URL" -O "$SERVER_PATH/$JAR_NAME" -q --show-progress
 
-# Download the jar
-wget "${URL}" -O "${SERVER_NAME}"/"${JAR_NAME}" -q --show-progress
-
-# Check if the download was successful
 if [ $? -ne 0 ]
 then
-    echo "Failed to download the jar file."
-    exit 1
+    fn_error "Failed to download the jar file."
 fi
 
-#if ! fn_is_present "${JSON_FILE}"
-#then
-#    echo "Json file not present, making one..."
-#    wget https://raw.githubusercontent.com/LorenzoCardinali/MinecraftServersManager/refs/heads/main/config.json -q -O ${JSON_FILE}
-#fi
+# initial ram size
+initial=1024
+
+while true ; do
+    read -e -i "$initial" -p "Insert Server ram (ex. 1024): " -r respond
+
+    if ! [[ $respond =~ ^[0-9]+$ ]] ; then
+        fn_error "Not a number" false
+    else
+        size=$respond
+        break
+    fi
+
+    initial=$respond
+done
+
+# creating config file
+jar="${JAR_NAME}" ram="${size}M" min_ram="$((size/2))M" yq '.jar_file = strenv(jar) | .max_ram = strenv(ram) | .min_ram = strenv(min_ram)' "$CONFIG_PATH/base.yml" > "$CONFIG_FILE"
