@@ -35,8 +35,6 @@ export CONFIG_PATH
 source "$LIBS_PATH/var-lib.sh"
 source "$LIBS_PATH/fun-lib.sh"
 
-echo "$STATUS"
-
 # $(var="$SERVER_NAME" yq '.servers | has(strenv(var))' conf/"$YAML_FILE")
 
 # Check if at least one argument is provided

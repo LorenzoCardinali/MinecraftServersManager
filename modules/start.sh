@@ -4,23 +4,19 @@
 # Imports #
 ###########
 
-# Jar import
-JAR_FILE=$(yq '.jar_file' "$CONFIG_FILE")
-JAR_FILE="-jar /home/cardif/Documents/repos/MinecraftServersManager/test/paper-1.21.4-66.jar"
-
-#if [ "$JAR_FILE" == null ]
-#then
-#    JAR_FILE=""
-#else
-#    JAR_FILE="-jar $SERVER_PATH/$JAR_FILE"
-#fi
-
 # ram import
 MIN_RAM=$(yq '.min_ram' "$CONFIG_FILE")
 MAX_RAM=$(yq '.max_ram' "$CONFIG_FILE")
 
 # parameters import
 PARAMETERS=$(yq '.parameters' "$CONFIG_FILE")
+
+if [ "$JAR_FILE" == null ]
+then
+    JAR_FILE=""
+else
+    JAR_FILE="-jar $JAR_FILE"
+fi
 
 # move to server directory if present
 cd "$SERVER_PATH" || exit 1
@@ -44,7 +40,7 @@ function fn_timer_update() {
         ((TRIES -= 1))
     fi
     
-    if [ $TRIES -le 0 ]
+    if [ $TRIES -le 1 ]
     then
         fn_change_status "$STATUS_err" "$STATUS_FILE"
     fi
@@ -60,9 +56,7 @@ while true ; do
             fn_to_log "Server started." "$LOG_FILE"
             fn_change_status "$STATUS_run" "$STATUS_FILE"
             fn_timer_update
-            java "$JAR_FILE"
-            #java -Xmx"${MAX_RAM}" -Xms"${MIN_RAM}" -jar /home/cardif/Documents/repos/MinecraftServersManager/test/paper-1.21.4-66.jar --nogui
-            #java -Xmx"${MAX_RAM}" -Xms"${MIN_RAM}" "${JAR_FILE}"
+            java -Xmx${MAX_RAM} -Xms${MIN_RAM} ${JAR_FILE}
         ;;
         
         "$STATUS_run")

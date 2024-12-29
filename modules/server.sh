@@ -3,7 +3,6 @@
 # move to script directory
 #cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
 
-
 # arguments
 COMMAND=${1}
 ARG=${2}
@@ -17,8 +16,8 @@ fn_is_present "$CONFIG_FILE" "Yaml file not present."
 
 # import jar file
 JAR_FILE="$SERVER_PATH/$(yq e '.jar_file' "$CONFIG_FILE")"
-
 fn_is_present "$JAR_FILE" "Jar file not found."
+export JAR_FILE
 
 # log file check
 if ! fn_is_present "$LOG_FILE"
@@ -61,12 +60,6 @@ function fn_eula_agree() {
     fi
 }
 
-# server and session start
-function fn_server_start() {
-    echo Server started
-    #tmux new -d -s "${SESSION_NAME}" ./$START_SCRIPT "$SERVER" "$JSON_FILE"
-}
-
 # check if session exist
 function fn_session_check() {
     tmux ls 2>/dev/null | grep -qc "${SESSION_NAME}"
@@ -101,8 +94,7 @@ case "$COMMAND" in
             fn_eula_check
             echo "Server starting..."
             fn_change_status "$STATUS_on" "$STATUS_FILE"
-            fn_server_start
-            bash "$MODULE_PATH/$START_MODULE"
+            tmux new -d -s "${SESSION_NAME}" bash "$MODULE_PATH/$START_MODULE"
         fi
     ;;
     
