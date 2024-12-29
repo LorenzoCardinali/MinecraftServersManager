@@ -18,11 +18,13 @@ function display_help() {
 # Assign server name and command
 COMMAND=$1
 SERVER_NAME=$2
-export SERVER_NAME
 ARG=${3:-}
 
 # path definitions
 SOURCE_PATH=$(dirname "$0")
+
+SERVER_PATH="$PWD/$SERVER_NAME"
+export SERVER_PATH
 
 MODULE_PATH="$SOURCE_PATH/modules"
 LIBS_PATH="$SOURCE_PATH/libs"
@@ -56,27 +58,27 @@ case $COMMAND in
 
     start)
         echo "Starting server: $SERVER_NAME"
-        bash "$MODULE_PATH/$SERVER_MODULE" start "$SERVER_NAME"
+        bash "$MODULE_PATH/$SERVER_MODULE" start
         ;;
     
     stop)
         echo "Stopping server: $SERVER_NAME"
-        bash "$MODULE_PATH/$SERVER_MODULE" stop "$SERVER_NAME"
+        bash "$MODULE_PATH/$SERVER_MODULE" stop
         ;;
     
     restart)
         echo "Restarting server: $SERVER_NAME"
-        bash "$MODULE_PATH/$SERVER_MODULE" restart "$SERVER_NAME"
+        bash "$MODULE_PATH/$SERVER_MODULE" restart
         ;;
     
     status)
         echo "Checking status of server: $SERVER_NAME"
-        bash "$MODULE_PATH/$SERVER_MODULE" status "$SERVER_NAME"
+        bash "$MODULE_PATH/$SERVER_MODULE" status
         ;;
     
     console)
         echo "Opening console for server: $SERVER_NAME"
-        bash "$MODULE_PATH/$SERVER_MODULE" console "$SERVER_NAME"
+        bash "$MODULE_PATH/$SERVER_MODULE" console
         ;;
     
     broad)
@@ -85,7 +87,7 @@ case $COMMAND in
             exit 1
         fi
         echo "Broadcasting message to server: $SERVER_NAME"
-        bash "$MODULE_PATH/$SERVER_MODULE" broad "$SERVER_NAME" "$ARG"
+        bash "$MODULE_PATH/$SERVER_MODULE" broad "$ARG"
         ;;
     
     cmd)
@@ -94,7 +96,7 @@ case $COMMAND in
             exit 1
         fi
         echo "Executing command in server console: $ARG"
-        bash "$MODULE_PATH/$SERVER_MODULE" cmd "$SERVER_NAME" "$ARG"
+        bash "$MODULE_PATH/$SERVER_MODULE" cmd "$ARG"
         ;;
     
     help)

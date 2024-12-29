@@ -5,34 +5,17 @@ cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
 
 # arguments
 COMMAND=${1}
-SERVER=${2}
-ARG=${3}
-
-source "$(dirname "$0")/fun-lib.sh"
-source "$(dirname "$0")/var-lib.sh"
+ARG=${2}
 
 ######################
 # Imports and checks #
 ######################
 
-# start script check
-fn_is_present "$START_SCRIPT" "Start script not present."
+# config file check
+fn_is_present "$CONFIG_FILE" "Yaml file not present."
 
-# json file check
-fn_is_present "$JSON_FILE" "Json file not present."
-
-# server check
-if ! jq -r ".servers | keys" "$JSON_FILE" | grep -q "$SERVER"
-then
-    fn_error "Server configs not found."
-fi
-
-fn_is_present "$SERVER" "Server folder not present."
-
-if [ "$JAR_FILE" == "null" ]
-then
-    fn_error "Jar file incorrect."
-fi
+# import jar file
+JAR_FILE="$SERVER_PATH/$(yq e '.jar_file' "$CONFIG_FILE")"
 
 fn_is_present "$JAR_FILE" "Jar file not found."
 
@@ -40,11 +23,13 @@ fn_is_present "$JAR_FILE" "Jar file not found."
 if fn_is_present "$LOG_FILE"
 then
     echo "Log file not present, making a new one..."
-    touch "$LOG_FILE"
+    fn_to_log "Made log file" "$LOG_FILE"
 fi
 
 # session parameters
-SESSION_NAME="MC_${SERVER}"
+SESSION_NAME="MC_${SERVER_NAME}"
+
+EULA_FILE="$SERVER_PATH/eula.txt"
 
 #############
 # Functions #
@@ -52,9 +37,9 @@ SESSION_NAME="MC_${SERVER}"
 
 # eula check
 function fn_eula_check() {
-    if fn_is_present "$SERVER/eula.txt"
+    if fn_is_present "$EULA_FILE"
     then
-        if grep -q "false" "$SERVER/eula.txt"
+        if grep -q "false" "$EULA_FILE"
         then
             fn_eula_agree
         fi
@@ -69,7 +54,7 @@ function fn_eula_agree() {
     echo "You need to agree to the EULA in order to run the server."
     if fn_prompt_yn "Do you agree?" Y
     then
-        printf "#%s \neula=true\n" "$(date)" > "$SERVER"/eula.txt
+        printf "#%s \neula=true\n" "$(date)" > "$EULA_FILE"
     else
         fn_error "Can't start the server without the agreement of the eula."
     fi
@@ -77,7 +62,7 @@ function fn_eula_agree() {
 
 # server and session start
 function fn_server_start() {
-    echo server started
+    echo Server started
     #tmux new -d -s "${SESSION_NAME}" ./$START_SCRIPT "$SERVER" "$JSON_FILE"
 }
 
@@ -114,7 +99,7 @@ case "$COMMAND" in
         else
             fn_eula_check
             echo "Server starting..."
-            fn_change_status "${STATUS[on]}"
+            fn_change_status "${STATUS[on]}" "$STATUS_FILE"
             fn_server_start 
             #./$START_SCRIPT "$SERVER" "$JSON_FILE"
         fi
@@ -124,7 +109,7 @@ case "$COMMAND" in
         if fn_session_check
         then
             echo "Server stopping..."
-            fn_change_status "${STATUS[off]}"
+            fn_change_status "${STATUS[off]}" "$STATUS_FILE"
             fn_to_console "broadcast Stopping the server in 5 seconds."
             sleep 5
             fn_to_console "stop"
@@ -137,7 +122,7 @@ case "$COMMAND" in
         if fn_session_check
         then
             echo "Server restarting..."
-            fn_change_status "${STATUS[res]}"
+            fn_change_status "${STATUS[res]}" "$STATUS_FILE"
             fn_to_console "broadcast Restarting the server in 5 seconds."
             sleep 5
             fn_to_console "stop"

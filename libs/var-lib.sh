@@ -14,8 +14,6 @@ ADDSERVER_MODULE="addServer.sh"
 export ADDSERVER_MODULE
 
 # file / folder definition
-SERVER_PATH="$PWD/$SERVER_NAME"
-export SERVER_PATH
 DATA_FOLDER="$SERVER_PATH/mcmanager"
 export DATA_FOLDER
 
